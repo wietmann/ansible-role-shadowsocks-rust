@@ -26,3 +26,44 @@
     group: root
     mode: 0755
   when: shadowsocks_rust_binary_stats.stat.exists != True or shadowsocks_rust_binary_current_version.stdout_lines[0] != shadowsocks_rust_version
+
+- name: Create proccess group
+  group:
+    name: "{{ shadowsocks_rust_group }}"
+    system: yes
+
+- name: Create proccess user
+  user:
+    name: "{{ shadowsocks_rust_user }}"
+    system: yes
+    group: "{{ shadowsocks_rust_group }}"
+    create_home: no
+    home: "/var/lib/shadowsocks-rust"
+    password: "*"
+    shell: /sbin/nologin
+    state: present
+
+- name: Create systemd unit files
+  template:
+    src: "{{ item }}.service.j2"
+    dest: "/etc/systemd/system/{{ item }}.service"
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - "shadowsocks-rust-server@"
+    - "shadowsocks-rust-local@"
+    # - "shadowsocks-rust-redir@"
+    # - "shadowsocks-rust-tunnel@"
+
+- name: Systemd daemon reload
+  systemd:
+    daemon_reload: yes
+
+- name: Create configuration dir
+  file:
+    path: "{{ shadowsocks_rust_config_path }}"
+    state: directory
+    owner: "{{ shadowsocks_rust_user }}"
+    group: "{{ shadowsocks_rust_group }}"
+    mode: 0750

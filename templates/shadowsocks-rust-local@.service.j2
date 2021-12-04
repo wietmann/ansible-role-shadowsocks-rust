@@ -1,0 +1,15 @@
+[Unit]
+Description=Shadowsocks-rust Custom Client Service for %I
+Documentation=https://github.com/shadowsocks/shadowsocks-rust
+After=network.target
+
+[Service]
+Type=simple
+User={{ shadowsocks_rust_user }}
+Group={{ shadowsocks_rust_group }}
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+ExecStart={{ shadowsocks_rust_bin_path }}/sslocal -c {{ shadowsocks_rust_config_path }}/%i.json
+
+[Install]
+WantedBy=multi-user.target
