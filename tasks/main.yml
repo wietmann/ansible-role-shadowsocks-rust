@@ -1,0 +1,28 @@
+---
+- name: Check whether binary is present
+  stat:
+    path: "{{ shadowsocks_rust_bin_path }}/ssserver"
+  register: shadowsocks_rust_binary_stats
+
+- name: Get binary version
+  shell:
+    cmd: "{{ shadowsocks_rust_bin_path }}/ssserver --version | cut -d ' ' -f 2"
+  when: shadowsocks_rust_binary_stats.stat.exists
+  changed_when: false
+  failed_when: false
+  register: shadowsocks_rust_binary_current_version
+
+- name: Build download URL
+  set_fact:
+    shadowsocks_rust_download_url: "https://github.com/shadowsocks/shadowsocks-rust/releases/download/v{{ shadowsocks_rust_version }}/shadowsocks-v{{ shadowsocks_rust_version }}.x86_64-unknown-linux-musl.tar.xz"
+  when: shadowsocks_rust_download_url is not defined
+
+- name: Fetch binary file tarball from Github
+  unarchive:
+    src: "{{ shadowsocks_rust_download_url }}"
+    dest: "{{ shadowsocks_rust_bin_path }}"
+    remote_src: yes
+    owner: root
+    group: root
+    mode: 0755
+  when: shadowsocks_rust_binary_stats.stat.exists != True or shadowsocks_rust_binary_current_version.stdout_lines[0] != shadowsocks_rust_version
