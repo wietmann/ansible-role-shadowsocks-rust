@@ -6,3 +6,5 @@ shadowsocks_rust_config_path: /etc/shadowsocks-rust
 
 shadowsocks_rust_user: shadowsocks-rust
 shadowsocks_rust_group: shadowsocks-rust
+
+shadowsocks_rust_config: []

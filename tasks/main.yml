@@ -67,3 +67,39 @@
     owner: "{{ shadowsocks_rust_user }}"
     group: "{{ shadowsocks_rust_group }}"
     mode: 0750
+
+- name: Stop services if config has `absent' state
+  systemd:
+    name: "shadowsocks-rust-{{ item.type | default('server') }}@{{ item.name }}"
+    state: stopped
+    disabled: yes
+  when: (item.state | default('present')) == 'absent'
+  loop: "{{ shadowsocks_rust_config }}"
+
+- name: Remove absent configs
+  file:
+    path: "{{ shadowsocks_rust_config_path }}/{{ item.name }}.json"
+    state: absent
+  when: (item.state | default('present')) == 'absent'
+  loop: "{{ shadowsocks_rust_config }}"
+
+- name: Create configs with `present' state
+  copy:
+    dest: "{{ shadowsocks_rust_config_path }}/{{ item.name }}.json"
+    content: |-
+      {{ item.config | to_nice_json }}
+    owner: "{{ shadowsocks_rust_user }}"
+    group: "{{ shadowsocks_rust_group }}"
+    mode: 0640
+  when: (item.state | default('present')) == 'present'
+  register: create_config_results
+  notify: restart shadowsocks-rust
+  loop: "{{ shadowsocks_rust_config }}"
+
+- name: Start and enable systemd services for present configs
+  systemd:
+    name: "shadowsocks-rust-{{ item.type | default('server') }}@{{ item.name }}"
+    state: started
+    enabled: yes
+  when: (item.state | default('present')) == 'present'
+  loop: "{{ shadowsocks_rust_config }}"
