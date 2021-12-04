@@ -1,0 +1,70 @@
+---
+- name: Run role
+  hosts: all
+  become: yes
+
+  vars:
+    shadowsocks_rust_config:
+      - name: server1
+        state: present
+        type: server
+        config:
+          server: "localhost"
+          server_port: 8081
+          local_port: 1080
+          password: "VerySecretPassword1"
+          timeout: 60
+          method: "aes-256-gcm"
+          fast_open: true
+      - name: server2
+        # state: present
+        type: server
+        config:
+          server: "localhost"
+          server_port: 8082
+          local_port: 1080
+          password: "VerySecretPassword2"
+          timeout: 60
+          method: "aes-256-gcm"
+          fast_open: true
+      - name: local1
+        state: present
+        type: local
+        config:
+          server: "localhost"
+          server_port: 8081
+          password: "VerySecretPassword1"
+          method: "aes-256-gcm"
+          local_port: 1081
+      - name: local2
+        state: present
+        type: local
+        config:
+          server: "localhost"
+          server_port: 8082
+          password: "VerySecretPassword2"
+          method: "aes-256-gcm"
+          local_port: 1082
+    _packages:
+      "Debian":
+        - xz-utils
+        - zip
+        - tar
+      "RedHat":
+        - xz
+        - zip
+        - tar
+
+  pre_tasks:
+    - name: Update CA certificates
+      package:
+        name: ca-certificates
+        state: latest
+
+    - name: Install dependancies
+      package:
+        name: "{{ _packages[ansible_os_family] }}"
+        state: present
+
+  roles:
+    - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"

@@ -1,0 +1,58 @@
+---
+- name: Verify
+  hosts: all
+  become: yes
+  # gather_facts: false
+
+  vars:
+    verify_services:
+      - "shadowsocks-rust-server@server1"
+      - "shadowsocks-rust-server@server2"
+      - "shadowsocks-rust-local@local1"
+      - "shadowsocks-rust-local@local2"
+    verify_listen_ports:
+      - 8081
+      - 8082
+      - 1081
+      - 1082
+
+  tasks:
+    # Provision environment
+    - name: "RedHat: Ensure netcat is present"
+      package:
+        name: net-tools
+        state: present
+
+    # Run tests
+    - name: Gather services facts
+      service_facts:
+
+    - name: Print all services
+      debug:
+        var: services
+
+    - name: Check shadowsocks-rust services status
+      assert:
+        that: services[item+'.service'].state == "running"
+        success_msg: "Service {{ item }} is in running state."
+        fail_msg: "Service {{ item }} is NOT in running state."
+      loop: "{{ verify_services }}"
+
+    - name: Gather listen ports facts
+      listen_ports_facts:
+
+    - name: Print all ports
+      debug:
+        var: tcp_listen
+
+    - name: Create TCP listen ports array
+      set_fact:
+        tcp_listen_ports: "{{ (tcp_listen_ports | default([])) + [item.port] }}"
+      loop: "{{ tcp_listen }}"
+
+    - name: Check shadowsocks-rust processes binded to specified ports
+      assert:
+        that: item in tcp_listen_ports
+        success_msg: "Port {{ item }} is present."
+        fail_msg: "Port {{ item }} is NOT present."
+      loop: "{{ verify_listen_ports }}"
