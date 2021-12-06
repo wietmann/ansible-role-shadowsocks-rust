@@ -14,7 +14,7 @@
 
 - name: Build download URL
   set_fact:
-    shadowsocks_rust_download_url: "https://github.com/shadowsocks/shadowsocks-rust/releases/download/v{{ shadowsocks_rust_version }}/shadowsocks-v{{ shadowsocks_rust_version }}.x86_64-unknown-linux-musl.tar.xz"
+    shadowsocks_rust_download_url: "https://github.com/shadowsocks/shadowsocks-rust/releases/download/v{{ shadowsocks_rust_version }}/shadowsocks-v{{ shadowsocks_rust_version }}.x86_64-unknown-linux-{{ shadowsocks_rust_linux_libc }}.tar.xz"
   when: shadowsocks_rust_download_url is not defined
 
 - name: Fetch binary file tarball from Github
