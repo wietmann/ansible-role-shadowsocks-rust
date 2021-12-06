@@ -1,0 +1,31 @@
+---
+galaxy_info:
+  role_name: shadowsocks_rust
+  namespace: wietmann
+  author: Dmitry Danilov
+  description: Setup Shadowsocks-rust
+  license: MIT
+  min_ansible_version: 2.9
+
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+    - name: Debian
+      versions:
+        - stretch
+        - buster
+        - bullseye
+    - name: Ubuntu
+      versions:
+        - bionic
+        - focal
+
+  galaxy_tags:
+    - linux
+    - shadowsocks
+    - shadowsocks-rust
+    - proxy
+
+dependencies: []
