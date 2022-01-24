@@ -3,7 +3,7 @@ Ansible Role: Shadowsocks-Rust
 
 Ansible Role that installs and manages [shadowsocks-rust](https://github.com/shadowsocks/shadowsocks-rust) on Linux hosts.
 
-Role downloads defined version of `shadowsocks-rust` from release pacge on GitHub, sets up process environment (create process user and group, add systemd unit files, add configuration files) and manages process instances via systemd. Currently `sslocal` and `ssserver` instanced service units are present.
+Role downloads defined version of `shadowsocks-rust` from release page on GitHub, sets up process environment (create process user and group, add systemd unit files, add configuration files) and manages process instances via systemd. Currently `sslocal` and `ssserver` instanced service units are present.
 
 By default, Musl build for x86_64 is installed.
 
@@ -86,13 +86,14 @@ Setup 2 different shadowsocks servers on one host:
         - zip
         - tar
 
-    - name: Install dependancies
+  pre_tasks:
+    - name: Install dependencies
       package:
         name: "{{ _packages[ansible_os_family] }}"
         state: present
 
   roles:
-    - role: wietmann.shadowsocks-rust
+    - role: wietmann.shadowsocks_rust
 ```
 
 Client (`sslocal`)
@@ -112,9 +113,24 @@ Client (`sslocal`)
           password: "VerySecretPassword1"
           method: "aes-256-gcm"
           local_port: 1081
+    _packages:
+      "Debian":
+        - xz-utils
+        - zip
+        - tar
+      "RedHat":
+        - xz
+        - zip
+        - tar
+
+  pre_tasks:
+    - name: Install dependencies
+      package:
+        name: "{{ _packages[ansible_os_family] }}"
+        state: present
 
   roles:
-    - role: wietmann.shadowsocks-rust
+    - role: wietmann.shadowsocks_rust
 ```
 
 Testing
