@@ -1,11 +1,12 @@
+# code: language=ansible
 ---
 - name: Check whether binary is present
-  stat:
+  ansible.builtin.stat:
     path: "{{ shadowsocks_rust_bin_path }}/ssserver"
   register: shadowsocks_rust_binary_stats
 
 - name: Get binary version
-  shell:
+  ansible.builtin.shell:
     cmd: "{{ shadowsocks_rust_bin_path }}/ssserver --version | cut -d ' ' -f 2"
   when: shadowsocks_rust_binary_stats.stat.exists
   changed_when: false
@@ -13,38 +14,38 @@
   register: shadowsocks_rust_binary_current_version
 
 - name: Build download URL
-  set_fact:
+  ansible.builtin.set_fact:
     shadowsocks_rust_download_url: "https://github.com/shadowsocks/shadowsocks-rust/releases/download/v{{ shadowsocks_rust_version }}/shadowsocks-v{{ shadowsocks_rust_version }}.x86_64-unknown-linux-{{ shadowsocks_rust_linux_libc }}.tar.xz"
   when: shadowsocks_rust_download_url is not defined
 
 - name: Fetch binary file tarball from Github
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ shadowsocks_rust_download_url }}"
     dest: "{{ shadowsocks_rust_bin_path }}"
-    remote_src: yes
+    remote_src: true
     owner: root
     group: root
     mode: 0755
-  when: shadowsocks_rust_binary_stats.stat.exists != True or shadowsocks_rust_binary_current_version.stdout_lines[0] != shadowsocks_rust_version
+  when: not shadowsocks_rust_binary_stats.stat.exists or shadowsocks_rust_binary_current_version.stdout_lines[0] != shadowsocks_rust_version
 
-- name: Create proccess group
-  group:
+- name: Create process group
+  ansible.builtin.group:
     name: "{{ shadowsocks_rust_group }}"
-    system: yes
+    system: true
 
-- name: Create proccess user
-  user:
+- name: Create process user
+  ansible.builtin.user:
     name: "{{ shadowsocks_rust_user }}"
-    system: yes
+    system: true
     group: "{{ shadowsocks_rust_group }}"
-    create_home: no
+    create_home: false
     home: "/var/lib/shadowsocks-rust"
     password: "*"
     shell: /sbin/nologin
     state: present
 
 - name: Create systemd unit files
-  template:
+  ansible.builtin.template:
     src: "{{ item }}.service.j2"
     dest: "/etc/systemd/system/{{ item }}.service"
     owner: root
@@ -57,11 +58,11 @@
     # - "shadowsocks-rust-tunnel@"
 
 - name: Systemd daemon reload
-  systemd:
-    daemon_reload: yes
+  ansible.builtin.systemd:
+    daemon_reload: true
 
 - name: Create configuration dir
-  file:
+  ansible.builtin.file:
     path: "{{ shadowsocks_rust_config_path }}"
     state: directory
     owner: "{{ shadowsocks_rust_user }}"
@@ -69,22 +70,22 @@
     mode: 0750
 
 - name: Stop services if config has `absent' state
-  systemd:
+  ansible.builtin.systemd:
     name: "shadowsocks-rust-{{ item.type | default('server') }}@{{ item.name }}"
     state: stopped
-    disabled: yes
+    enabled: false
   when: (item.state | default('present')) == 'absent'
   loop: "{{ shadowsocks_rust_config }}"
 
 - name: Remove absent configs
-  file:
+  ansible.builtin.file:
     path: "{{ shadowsocks_rust_config_path }}/{{ item.name }}.json"
     state: absent
   when: (item.state | default('present')) == 'absent'
   loop: "{{ shadowsocks_rust_config }}"
 
 - name: Create configs with `present' state
-  copy:
+  ansible.builtin.copy:
     dest: "{{ shadowsocks_rust_config_path }}/{{ item.name }}.json"
     content: |-
       {{ item.config | to_nice_json }}
@@ -97,9 +98,9 @@
   loop: "{{ shadowsocks_rust_config }}"
 
 - name: Start and enable systemd services for present configs
-  systemd:
+  ansible.builtin.systemd:
     name: "shadowsocks-rust-{{ item.type | default('server') }}@{{ item.name }}"
     state: started
-    enabled: yes
+    enabled: true
   when: (item.state | default('present')) == 'present'
   loop: "{{ shadowsocks_rust_config }}"

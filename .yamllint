@@ -3,9 +3,9 @@
 extends: default
 
 yaml-files:
-  - '*.yaml'
-  - '*.yml'
-  - '.yamllint'
+  - "*.yaml"
+  - "*.yml"
+  - ".yamllint"
 
 ignore: .tox
 
@@ -40,5 +40,3 @@ rules:
   new-line-at-end-of-file: enable
   new-lines:
     type: unix
-  trailing-spaces: enable
-  truthy: disable

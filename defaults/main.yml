@@ -1,6 +1,6 @@
 ---
-shadowsocks_rust_version: "1.12.4"
-shadowsocks_rust_linux_libc: "musl"
+shadowsocks_rust_version: "1.17.2"
+shadowsocks_rust_linux_libc: "gnu"
 shadowsocks_rust_bin_path: "/usr/local/bin"
 
 shadowsocks_rust_config_path: /etc/shadowsocks-rust
