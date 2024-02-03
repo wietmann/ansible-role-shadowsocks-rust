@@ -1,7 +1,7 @@
 ---
 - name: Verify
   hosts: all
-  become: yes
+  become: true
   # gather_facts: false
 
   vars:
@@ -19,39 +19,39 @@
   tasks:
     # Provision environment
     - name: "RedHat: Ensure netcat is present"
-      package:
+      ansible.builtin.package:
         name: net-tools
         state: present
 
     # Run tests
     - name: Gather services facts
-      service_facts:
+      ansible.builtin.service_facts:
 
     - name: Print all services
-      debug:
+      ansible.builtin.debug:
         var: services
 
     - name: Check shadowsocks-rust services status
-      assert:
+      ansible.builtin.assert:
         that: services[item+'.service'].state == "running"
         success_msg: "Service {{ item }} is in running state."
         fail_msg: "Service {{ item }} is NOT in running state."
       loop: "{{ verify_services }}"
 
     - name: Gather listen ports facts
-      listen_ports_facts:
+      ansible.builtin.listen_ports_facts:
 
     - name: Print all ports
-      debug:
+      ansible.builtin.debug:
         var: tcp_listen
 
     - name: Create TCP listen ports array
-      set_fact:
+      ansible.builtin.set_fact:
         tcp_listen_ports: "{{ (tcp_listen_ports | default([])) + [item.port] }}"
       loop: "{{ tcp_listen }}"
 
     - name: Check shadowsocks-rust processes binded to specified ports
-      assert:
+      ansible.builtin.assert:
         that: item in tcp_listen_ports
         success_msg: "Port {{ item }} is present."
         fail_msg: "Port {{ item }} is NOT present."

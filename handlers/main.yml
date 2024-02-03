@@ -1,6 +1,6 @@
 ---
-- name: restart shadowsocks-rust
-  systemd:
+- name: Restart shadowsocks-rust
+  ansible.builtin.systemd:
     name: "shadowsocks-rust-{{ item.item.type | default('server') }}@{{ item.item.name }}"
     state: restarted
   when: item.changed

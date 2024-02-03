@@ -1,7 +1,7 @@
 ---
 - name: Run role
   hosts: all
-  become: yes
+  become: true
 
   vars:
     shadowsocks_rust_config:
@@ -57,12 +57,12 @@
 
   pre_tasks:
     - name: Update CA certificates
-      package:
+      ansible.builtin.package:
         name: ca-certificates
-        state: latest
+        state: present
 
     - name: Install dependancies
-      package:
+      ansible.builtin.package:
         name: "{{ _packages[ansible_os_family] }}"
         state: present
 
